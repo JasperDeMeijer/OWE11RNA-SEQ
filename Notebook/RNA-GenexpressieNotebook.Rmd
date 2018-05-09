@@ -6,10 +6,15 @@ output:
 ---
 
 
+```{r}
+wd <- getwd()
+WCFS1_path <- file.path(wd, "WCFS1_anno.txt")
+RNA_seq_counts_path <- file.path(wd, "RNA-Seq-counts.txt")
+```
 
 ```{r}
-anno <- read.delim(header=TRUE, file='/home/jdm/ProjectOWE11/WCFS1_anno.txt', skip=1)
-counts <- read.delim(header=TRUE, file='/home/jdm/ProjectOWE11/RNA-Seq-counts.txt')
+anno <- read.delim(header=TRUE, file= file.path(WCFS1_path), skip=1)
+counts <- read.delim(header=TRUE, file= file.path(RNA_seq_counts_path))
 
 head(anno)
 head(counts)
