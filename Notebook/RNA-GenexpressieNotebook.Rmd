@@ -80,7 +80,7 @@ Applying normalisation factors
 counts$WCFS1.glc.1 <- counts$WCFS1.glc.1 * y[["samples"]][["norm.factors"]][1]
 counts$WCFS1.glc.2 <- counts$WCFS1.glc.2 * y[["samples"]][["norm.factors"]][2]
 counts$WCFS1.rib.1 <- counts$WCFS1.rib.1 * y[["samples"]][["norm.factors"]][3]
-ounts$WCFS1.rib.2 <- counts$WCFS1.rib.2 * y[["samples"]][["norm.factors"]][4]
+counts$WCFS1.rib.2 <- counts$WCFS1.rib.2 * y[["samples"]][["norm.factors"]][4]
 
 counts$NC8.glc.1 <- counts$NC8.glc.1 * y[["samples"]][["norm.factors"]][5]
 counts$NC8.glc.2 <- counts$NC8.glc.2 * y[["samples"]][["norm.factors"]][6]
@@ -89,6 +89,17 @@ counts$NC8.rib.2 <- counts$NC8.rib.2 * y[["samples"]][["norm.factors"]][8]
 
 
 ```
+
+Fold Change:
+```{r}
+con <- makeContrasts(counts$WCFS1.glc.1 - counts$WCFS1.rib.1, levels="test")
+qlf <- glmQLFTest(fit, contrast=con)
+topTags(qlf)
+```
+
+
+
+
 
 
 ```{r}
