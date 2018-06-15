@@ -12,9 +12,6 @@ library('edgeR')
 library('gplots')
 library('KEGGREST')
 library('KEGG.db')
-library('pathview')
-library('RColorBrewer')
-library('xlsx')
 ```
 
 
@@ -92,9 +89,6 @@ plotBCV(y)
 
 
 ```{r}
-################################################
-# Significante genen bepalen (absolute FC > 1 EN de FDR is kleiner dan 0.05).
-################################################
 checkGenes <- function(stem){                           #Checking genes and only passing them trough when Propability value (Pvalue) is                                                         bigger then the False Discovery Rate (FDR).
 
   stem$FDR <- p.adjust(stem$PValue, method = "BH")      #FDR is calculated using Pvalue and BH method.
@@ -108,7 +102,6 @@ checkGenes <- function(stem){                           #Checking genes and only
 }
 ```
 
-
 Sorting dataset
 ```{r}
 sortGenes <- function(data){                                              #calling function
@@ -118,12 +111,11 @@ sortGenes <- function(data){                                              #calli
 }
 ```
 
-
 Getting most relevant KEGG pathway
 ```{r}
-getKEGG <- function(fit, n_results){
-  kegg_pathways <- kegga(fit, species.KEGG='lpl')
-  best_pathways <- topKEGG(kegg_pathways, number=n_results)
+getKEGG <- function(fit, n_results){                          #initializing getKEGG function
+  kegg_pathways <- kegga(fit, species.KEGG='lpl')             #running kegga with species lpl
+  best_pathways <- topKEGG(kegg_pathways, number=n_results)   #running topKEGG
   return(best_pathways)
 }
 ```
@@ -134,7 +126,6 @@ Normalize(counts)                         #Calling Normalize function
 Glc_ordered <- sortGenes(Glc_pass)        #Calling sortGenes for all datasets
 NC8_ordered <- sortGenes(NC8_pass)
 Rib_ordered <- sortGenes(Rib_pass)
-WCFS1_ordered <- sortGenes(WCFS1_pass)
-             
+WCFS1_ordered <- sortGenes(WCFS1_pass)           
 Pathways <- getKEGG(fitGene_WCFS1, Inf)   #Calling KEGG genes
 ```
