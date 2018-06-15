@@ -1,3 +1,4 @@
 # OWE11RNA-SEQ
 To Do:
-*PCA plot
+
+Script 'RNAseq_analyse.rmd' should be opened using Rstudio.
