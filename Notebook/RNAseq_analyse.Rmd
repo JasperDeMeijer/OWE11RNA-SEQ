@@ -104,8 +104,25 @@ checkGenes <- function(stem){                           #Checking genes and only
 
 Sorting dataset
 ```{r}
-sortGenes <- function(data){                                              #calling function
-  data$gene <- (row.names(data))                                          #giving Gene ids own column to make it more accessible  
+updateAnnot <- function(data){                                              #calling function
+  data$gene <- (row.names(data))                                          #giving Gene ids own column to make it more accessible
+  
+
+  # Load the annotatation data
+  Annot <- read.delim(file= "../data/ProteinTable1108_170517.txt", header = TRUE, sep="\t")
+  
+  # Load the additional annotation data
+  Add <- read.delim(file= "../data/WCFS1_anno.txt" , header = TRUE, skip=1, sep="\t")
+  
+  # Get a subset of wanted columns from additional data
+  Add <- Add[ ,c('ORF', 'class', 'subclass', 'LocateP.Subcellular.Localization.Prediction')]
+  
+  # Merge Counts with Annot
+  data <- merge(data, Annot,  by.x = "gene", by.y = "Locus.tag") 
+  
+  # Merge Counts_ann with Add
+  data <- merge(data, Add,  by.x = "gene", by.y = "ORF")
+  
   orderedData <- as.data.frame(data[order(data$sign_pVal.logFC),])        #Making new sorted database
   return(orderedData)                                                     #returning dataframe
 }
@@ -123,9 +140,18 @@ getKEGG <- function(fit, n_results){                          #initializing getK
 Calling functions
 ```{r}
 Normalize(counts)                         #Calling Normalize function
-Glc_ordered <- sortGenes(Glc_pass)        #Calling sortGenes for all datasets
-NC8_ordered <- sortGenes(NC8_pass)
-Rib_ordered <- sortGenes(Rib_pass)
-WCFS1_ordered <- sortGenes(WCFS1_pass)           
+Glc_ordered <- updateAnnot(Glc_pass)        #Calling updateAnnot for all datasets
+NC8_ordered <- updateAnnot(NC8_pass)
+Rib_ordered <- updateAnnot(Rib_pass)
+WCFS1_ordered <- updateAnnot(WCFS1_pass)           
 Pathways <- getKEGG(fitGene_WCFS1, Inf)   #Calling KEGG genes
+
+#Write data
+write.csv(Pathways, file="../data/pathways.csv") #writing pathways to file
+write.csv(WCFS1_ordered, file="../data/Foldchange_WCFS1.csv")
+write.csv(NC8_ordered, file="../data/Foldchange_NC8.csv")
+write.csv(Glc_ordered, file="../data/Foldchange_Glucose.csv")
+write.csv(Rib_ordered, file="../data/Foldchange_Ribose.csv")
+
+
 ```
