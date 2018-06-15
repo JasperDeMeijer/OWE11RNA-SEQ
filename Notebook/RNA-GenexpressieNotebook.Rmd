@@ -5,8 +5,17 @@ output:
   pdf_document: default
 ---
 
+```{r}
+list.of.packages <- c("limma", "edgeR")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+
+
+```
 
 ```{r}
+
 wd <- getwd()
 WCFS1_path <- file.path(wd, "WCFS1_anno.txt")
 RNA_seq_counts_path <- file.path(wd, "RNA-Seq-counts.txt")
@@ -27,6 +36,133 @@ colnames(anno) <- c("ID","Gene")
 data <- merge(counts, anno, by.x="ID", by.y="ID", all.x=TRUE)
 
 
+```
+
+```{r}
+
+
+```
+
+
+
+```{r}
+all = cbind(counts[,"WCFS1.glc.1"], counts[,"WCFS1.glc.2"],counts[,"WCFS1.rib.1"],counts[,"WCFS1.rib.2"],counts[,"NC8.glc.1"], counts[,"NC8.glc.2"],counts[,"NC8.rib.1"],counts[,"NC8.rib.2"])  
+  
+WCFS1all = cbind(counts[,"WCFS1.glc.1"], counts[,"WCFS1.glc.2"],counts[,"WCFS1.rib.1"],counts[,"WCFS1.rib.2"])
+NC8all = cbind(counts[,"NC8.glc.1"], counts[,"NC8.glc.2"],counts[,"NC8.rib.1"],counts[,"NC8.rib.2"])
+
+#cnts <- read.delim(fNam)
+#row.names(cnts) <- cnts[,"ID"]
+
+#exp <- c("WCFS1.glc","WCFS1.glc","WCFS1.rib","WCFS1.rib")
+#group <- factor(exp)
+
+#y <- DGEList(counts=cnts[,2:5],group=group)
+
+exp <- c("WCFS1.glc.1","WCFS1.glc.2","WCFS1.rib.1","WCFS1.rib.2")
+group = factor(exp)
+y <- DGEList(counts=WCFS1all,group=group)
+
+keep.genes <- rowSums(cpm(y)>50) >= 2
+y <- y[keep.genes,]
+
+y$samples$lib.size <- colSums(y$counts)
+y <- calcNormFactors(y, method="TMM" )
+
+#########################################################
+exp2 <- c("NC8.glc.1","NC8.glc.2","NC8.rib.1","NC8.rib.2")
+group2 = factor(exp2)
+y2 <- DGEList(counts=NC8all,group=group2)
+
+keep.genes2 <- rowSums(cpm(y2)>50) >= 2
+y2 <- y2[keep.genes2,]
+
+y2$samples$lib.size <- colSums(y2$counts)
+y2 <- calcNormFactors(y2, method="TMM" )
+
+
+y
+y2
+
+
+#group <- c(1,1,1,1,2,2,2,2)
+#y <- DGEList(counts=all, group=group)
+#keep <- rowSums(cpm(y)>2) >= 4
+#y <- y[keep,]
+
+#y$samples$lib.size <- colSums(y$counts)
+#y <- calcNormFactors(y, method = 'TMM')
+
+#y$samples
+#plotMDS(y)
+
+#y <- estimateCommonDisp(y, verbose=TRUE)
+#y <- estimateTagwiseDisp(y)
+#plotBCV(y)
+
+#res <- exactTest(y)
+#fdr <- p.adjust(res$table$PValue, method="BH")
+#cpmres <- cpm(y)[rownames(res),]
+#summary(de <- decideTestsDGE(res))
+```
+
+
+Applying normalisation factors
+```{r}
+counts$WCFS1.glc.1 <- counts$WCFS1.glc.1 * y[["samples"]][["norm.factors"]][1]
+counts$WCFS1.glc.2 <- counts$WCFS1.glc.2 * y[["samples"]][["norm.factors"]][2]
+counts$WCFS1.rib.1 <- counts$WCFS1.rib.1 * y[["samples"]][["norm.factors"]][3]
+counts$WCFS1.rib.2 <- counts$WCFS1.rib.2 * y[["samples"]][["norm.factors"]][4]
+
+counts$NC8.glc.1 <- counts$NC8.glc.1 * y[["samples"]][["norm.factors"]][5]
+counts$NC8.glc.2 <- counts$NC8.glc.2 * y[["samples"]][["norm.factors"]][6]
+counts$NC8.rib.1 <- counts$NC8.rib.1 * y[["samples"]][["norm.factors"]][7]
+counts$NC8.rib.2 <- counts$NC8.rib.2 * y[["samples"]][["norm.factors"]][8]
+
+
+```
+
+Fold Change:
+```{r}
+# WCFS1
+#### G1 - R1
+temp <- log2(counts$WCFS1.glc.1)-log2(counts$WCFS1.rib.1)
+G1_R1 <- data.frame("ID" = counts$ID, "Log2" = temp)
+G1_R1 <- G1_R1[order(temp),]
+
+#### G2 - R2
+temp <- log2(counts$WCFS1.glc.2)-log2(counts$WCFS1.rib.2)
+G2_R2 <- data.frame("ID" = counts$ID, "Log2" = temp)
+G2_R2 <- G2_R2[order(temp),]
+
+
+
+#testsort <- testsort[is.finite(rowSums(testsort)),]
+#testsort <- testsort[!is.infinite(rowSums(x)),]
+#testsort <- testsort[is.finite(testsort)]
+#df <- df[is.finite(rowSums(df)),]
+
+#test
+G1_R1
+G2_R2
+
+
+
+#testje <- c("counts$WCFS1.glc.1 - counts$WCFS1.rib.1", "counts$WCFS1.glc.2 - counts$WCFS1.rib.1")
+#con <- makeContrasts(contrasts=testje, levels="counts$WCFS1.glc.1","counts$WCFS1.rib.1","counts$WCFS1.glc.2")
+#qlf <- glmQLFTest(fit, contrast=con)
+#topTags(qlf)
+
+```
+
+
+
+
+
+
+```{r}
+
+
 
 # write data to tsv file
 write.table(data, file="WCFS1_counts.tsv", sep="\t", quote=F, row.names=F)
@@ -38,6 +174,8 @@ m2 <- as.matrix(data[,2:9])
 # set headers 
 rownames(m2) <- data[,"ID"]
 ```
+
+
 ```{r}
 # compute correlation
 cor(m2[,1],m2[,2], method="spearman")
@@ -69,7 +207,7 @@ print("hello world")
 heatmap(m2)
 ```
 ```{r}
-pr <- prcomp(m2, centre=FALSE, scale.=FALSE)
+pr <- prcomp(m2, scale.=FALSE)
 
 
 ```
