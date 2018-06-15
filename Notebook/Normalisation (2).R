@@ -7,7 +7,7 @@ setNormalisation <- function(RNAseq){
   exp <- c("WCFS1.glc","WCFS1.glc","WCFS1.rib","WCFS1.rib", "NC8.glc", "NC8.glc", "NC8.rib", "NC8.rib")
   group <- factor(exp)
   # Inlezen van de data en de definitie van de kolommen
-  dge <- DGEList(counts= as.matrix(RNAseq[,2:9]), group=group)
+  dge <- DGEList(counts= as.matrix(RNAseq[,1:8]), group=group)
   
   keep.genes <- rowSums(cpm(dge) > 2) >= 2
   dge <- dge[keep.genes,]
@@ -81,6 +81,7 @@ setNormalisation <- function(RNAseq){
   rownames(glc.rib_FC) <- glc.rib_FC[,1]
   glc.rib_FC <<- glc.rib_FC[,-1]
   colnames(glc.rib_FC) <<- c("Glucose", "Ribose")
+  write.csv(glc.rib_FC, file = 'test.csv')
 }
 
 ################################################
@@ -102,5 +103,5 @@ getSignificantGenes <- function(stem){
 wd <- getwd()
 
 RNA_seq_counts_path <- file.path(wd, "RNA-Seq-counts.txt")
-counts <- read.delim(header=TRUE, file= file.path(RNA_seq_counts_path))
+counts <- read.delim(header=TRUE, file= file.choose(),row.names = 1, skip =1)
 setNormalisation(counts)
