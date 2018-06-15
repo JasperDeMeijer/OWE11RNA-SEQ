@@ -1,10 +1,10 @@
 # OWE11RNA-SEQ
 
-#Contributers:
-Heleen Severin
-Tim van de Kerkhof
-Shane Pullens
-Jasper de Meijer
+Contributers:
+- Heleen Severin
+- Tim van de Kerkhof
+- Shane Pullens
+- Jasper de Meijer
 
 RNA-SEQ analysis using R.
 
