@@ -6,7 +6,15 @@ output: html_notebook
 Getting selected file from user:
 ```{r}
 counts <- read.delim(header=TRUE, file= file.choose(),row.names = 1, skip =1) #Getting count data file with filechooser
-library(edgeR)                                                                #Loading in librarys
+library('edgeR')                                                                #Loading in librarys
+library('DBI')
+library('edgeR')
+library('gplots')
+library('KEGGREST')
+library('KEGG.db')
+library('pathview')
+library('RColorBrewer')
+library('xlsx')
 ```
 
 
@@ -15,11 +23,10 @@ Global variables are defiend here to make tweaking easier.
 ### GLOBAL VARIABLES ###
 cmpFilter = 2           #cmpfilter stand for counts per million filter and makes sure only genes with enough counts get passed trough.
 Pvalue = 0.05           #Pvalue for encapsulating probalility value
-
 ```
 
 
-
+Normilazation function
 ```{r}
 Normalize <- function(countData){                 #Initialising Normalize function
   exp <- c("WCFS1.glc","WCFS1.glc","WCFS1.rib","WCFS1.rib", "NC8.glc", "NC8.glc", "NC8.rib", "NC8.rib")     #Vectorizing 4 different                                                                                                                groups of 8 columns
@@ -37,7 +44,6 @@ Normalize <- function(countData){                 #Initialising Normalize functi
   design <- model.matrix(~0+group, data=y$samples)  #Samples are grouped into setd in a matrix by conditions.
   colnames(design) <- levels(y$samples$group)       #Renames column names based on the groups.
   
-  # Schatten van de dispersie. De breedte van de verdeling wordt bepaald.
   y <- estimateGLMCommonDisp(y,design)                  #Counts are being used to estimate dispersion values which are used for correcting the distributions.
   y <- estimateGLMTrendedDisp(y,design, method="power")
   y <- estimateGLMTagwiseDisp(y,design)
@@ -51,7 +57,7 @@ Normalize <- function(countData){                 #Initialising Normalize functi
   fit <- glmFit(y, design)                          #Merging design matrix with count data
   
   mcGene_WCFS1 <- makeContrasts(exp.r=WCFS1.rib-WCFS1.glc, levels = design)   #Generating contrast between WCFS1 strain
-  fitGene_WCFS1 <- glmLRT(fit, contrast = mcGene_WCFS1)                       #Calculating foldchange for WCFS1 strain
+  fitGene_WCFS1 <<- glmLRT(fit, contrast = mcGene_WCFS1)                       #Calculating foldchange for WCFS1 strain
   fitGene_WCFS1 <- as.data.frame(fitGene_WCFS1$table)
   WCFS1_FoldChange <<- fitGene_WCFS1
   
@@ -80,7 +86,6 @@ Normalize <- function(countData){                 #Initialising Normalize functi
 pdf("results.pdf")                         #Checking normalization and dispersion applied to data. (can be checked below in                                                         data-chunk)
 plotMDS(y)
 plotBCV(y)
-dev.off()
 }
 ```
 
@@ -103,7 +108,33 @@ checkGenes <- function(stem){                           #Checking genes and only
 }
 ```
 
+
+Sorting dataset
 ```{r}
-Normalize(counts)
+sortGenes <- function(data){                                              #calling function
+  data$gene <- (row.names(data))                                          #giving Gene ids own column to make it more accessible  
+  orderedData <- as.data.frame(data[order(data$sign_pVal.logFC),])        #Making new sorted database
+  return(orderedData)                                                     #returning dataframe
+}
 ```
 
+
+Getting most relevant KEGG pathway
+```{r}
+getKEGG <- function(fit, n_results){
+  kegg_pathways <- kegga(fit, species.KEGG='lpl')
+  best_pathways <- topKEGG(kegg_pathways, number=n_results)
+  return(best_pathways)
+}
+```
+
+Calling functions
+```{r}
+Normalize(counts)                         #Calling Normalize function
+Glc_ordered <- sortGenes(Glc_pass)        #Calling sortGenes for all datasets
+NC8_ordered <- sortGenes(NC8_pass)
+Rib_ordered <- sortGenes(Rib_pass)
+WCFS1_ordered <- sortGenes(WCFS1_pass)
+             
+Pathways <- getKEGG(fitGene_WCFS1, Inf)   #Calling KEGG genes
+```

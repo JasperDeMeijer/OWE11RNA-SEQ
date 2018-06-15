@@ -2,6 +2,10 @@
 # Normaliseren van de count data doormiddel van EdgeR en de
 # significante genen van de experimenten ophalen.
 ################################################
+
+counts <- read.delim(header=TRUE, file= file.choose(),row.names = 1, skip =1)
+setNormalisation(counts)
+
 setNormalisation <- function(RNAseq){
   library(edgeR)
   exp <- c("WCFS1.glc","WCFS1.glc","WCFS1.rib","WCFS1.rib", "NC8.glc", "NC8.glc", "NC8.rib", "NC8.rib")
@@ -99,9 +103,3 @@ getSignificantGenes <- function(stem){
 
   return(significantGenes)
 }
-
-wd <- getwd()
-
-RNA_seq_counts_path <- file.path(wd, "RNA-Seq-counts.txt")
-counts <- read.delim(header=TRUE, file= file.choose(),row.names = 1, skip =1)
-setNormalisation(counts)
